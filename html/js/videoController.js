@@ -7,7 +7,11 @@ let host
 $(document).ready(() => {
     popcornVideo = Popcorn('#video')
     documentVideo = document.getElementById('video')
-    primus = Primus.connect(`https://moviesync.nerdfox.me/ws/?url=${$('#video').attr('src')}&room=${window.location.pathname.replace('/', '')}`)
+    if (window.location.host === 'localhost:8006') {
+        primus = Primus.connect(`http://localhost:8007/ws/?url=${$('#video').attr('src')}&room=${window.location.pathname.replace('/', '')}`)
+    } else {
+        primus = Primus.connect(`https://moviesync.nerdfox.me/ws/?url=${$('#video').attr('src')}&room=${window.location.pathname.replace('/', '')}`)
+    }
 
     primus.on('open', () => {
         primus.id(id => {
@@ -23,11 +27,9 @@ $(document).ready(() => {
                 if (msg.res[i].id === primusID) {
                     if (msg.res[i].host) {
                         host = true
-                        popcornVideo.controls(true)
                     } else {
                         host = false
                         primus.write({cmd:'getTime'})
-                        popcornVideo.controls(false)
                     }
                 }
             }
@@ -43,7 +45,6 @@ $(document).ready(() => {
             popcornVideo.pause()
         }
         if (msg.cmd === 'getTime' && !host) {
-            console.log(msg)
             if (msg.params === 'play') {
                 popcornVideo.play()
                 popcornVideo.currentTime(msg.res)
@@ -73,6 +74,11 @@ $(document).ready(() => {
     documentVideo.addEventListener('canplay', () => {
         if (!host && documentVideo.paused) {
             primus.write({cmd:'getTime'})
+        }
+    })
+    documentVideo.addEventListener('seeked', () => {
+        if (host) {
+
         }
     })
 })

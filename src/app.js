@@ -6,12 +6,14 @@ const empty = require('is-empty')
 
 let app = express()
 
-app.use(express.static(path.join(__dirname, '../')))
+app.use(express.static(path.join(__dirname, '../html')))
 
-app.get('/*', async (req, res) => {
-    let video = await videoDB.findAsync({room:parseInt(req.url.replace('/', ''))})
+app.get('/player/*', async (req, res) => {
+    let video = await videoDB.findAsync({room:parseInt(req.url.replace('/player/', ''))})
     if (!empty(video)) {
-        res.render('index', {url:video[0].url})
+        res.render('player', {url:video[0].url})
+    } else {
+        res.end('Invaild Room ID')
     }
 })
 
